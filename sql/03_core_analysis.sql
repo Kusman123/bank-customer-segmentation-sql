@@ -68,22 +68,6 @@ limit 10;
 -- Purpose: Identify top accounts by gross monetary throughput.
 -- ----------------------------------------------------------------------------
 
-select
-	a.account_id,
-    concat(c.first_name," ",c.last_name) as account_holder,
-    a.account_type,
-    sum(t.amount) as gross_transaction_volume
-from accounts a
-join customers c
-on a.customer_id = c.customer_id
-join transactions t
-on t.account_id = a.account_id
-group by
-	a.account_id,
-    account_holder,
-    a.account_type
-order by gross_transaction_volume desc
-limit 10;
 
 select
 	a.account_id,
@@ -116,22 +100,7 @@ limit 10;
 -- Purpose: Track month-over-month volume, credits vs. debits, and count.
 -- ----------------------------------------------------------------------------
 
-select	* from transactions;
 
-select
-	date_format(transaction_date,"%Y-%m") as trans_month,
-	count(transaction_id) as total_transactions_count,
-    sum(amount) as total_volume,
-    
-    count(case when transaction_type = "Credit" then transaction_id else null end) as cnt_of_credit_transactions,
-    sum(case when transaction_type = "Credit" then amount else 0 end) as volume_of_credit_transactions,
-    
-	count(case when transaction_type = "Debit" then transaction_id else null end) as cnt_of_dedit_transaction,
-	sum(case when transaction_type = "Debit" then amount else 0 end) as volume_of_debit_transactions
-    
-from transactions
-group by date_format(transaction_date,"%Y-%m")
-order by date_format(transaction_date,"%Y-%m") asc;
 
 
 with cte1 as (
