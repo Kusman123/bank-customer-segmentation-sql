@@ -156,3 +156,89 @@ order by total_portfolio_balance desc;
 -- 3. Calculate total HNWI customer count and total HNWI balance.
 -- 4. Compute HNWI deposit share as a percentage of overall total bank deposits.
 -- =============================================================================
+
+
+
+with cte1 as (
+select
+	c.customer_id,
+    sum(a.balance) as customer_total_balance
+from customers c
+join accounts a
+on c.customer_id = a.customer_id
+where account_status = 'Active'
+group by c.customer_id
+),cte2 as 
+(
+select
+	customer_id,
+    customer_total_balance,
+    case 
+		when customer_total_balance > 100000 then "HNWI"
+		else "Non HNWI"
+	end as category
+from cte1
+)
+select
+	count(case when category = "HNWI" then customer_id else null end) as hnwi_customer_count,
+    coalesce(sum(case when category = "HNWI" then customer_total_balance else 0 end),0) as hnwi_total_deposits,
+    sum(customer_total_balance) as total_bank_deposits,
+    round(
+        (sum(case when category = 'HNWI' then customer_total_balance else 0 end) / nullif(sum(customer_total_balance), 0)) * 100, 
+        2
+    ) as hnwi_deposit_share_pct
+from cte2;
+
+
+
+-- =============================================================================
+-- QUESTION 5: Executive Monthly Operational Summary & Platform Run-Rate
+-- =============================================================================
+-- BUSINESS CONTEXT:
+-- C-suite leadership needs a unified monthly timeline tracking key operational 
+-- growth drivers: active customer transacting footprint, total debit spend, 
+-- average transaction size, and month-over-month growth momentum.
+--
+-- TECHNICAL REQUIREMENTS:
+-- 1. Aggregate monthly transaction footprint for 'Debit' transactions.
+-- 2. Count distinct transacting customers per month.
+-- 3. Calculate total monthly spend and average transaction size.
+-- 4. Calculate MoM percentage growth in debit spend using LAG().
+-- 5. Order chronologically by year and month.
+-- =============================================================================
+
+-- Problem Statement for Question 5 (Executive Monthly Run-Rate Dashboard)
+-- Write a query to aggregate monthly transaction metrics for transaction_type = 'Debit':
+-- txn_month: Month in YYYY-MM format.
+-- active_transacting_customers: COUNT(DISTINCT customer_id) who transacted that month.
+-- total_debit_transactions: COUNT(transaction_id).
+-- total_monthly_spend: SUM(amount).
+-- avg_txn_size: total_monthly_spend / NULLIF(total_debit_transactions, 0) rounded to 2 decimal places.
+-- mom_spend_growth_pct: Percentage change in total spend compared to the prior month using LAG().
+
+select	* from transactions;
+select	* from accounts;
+
+with cte1 as (
+select
+	date_format(t.transaction_date,"%Y-%m") as transaction_month,
+    count(distinct a.customer_id) as active_transacting_customers,
+    count(t.transaction_id) as total_debit_transactions,
+    sum(t.amount) as total_monthly_amount,
+    round(sum(t.amount)/nullif(count(t.transaction_id),0),2) avg_txn_size,
+    lag(sum(t.amount)) over(order by date_format(t.transaction_date,"%Y-%m")) as previous_month_spend
+from transactions t
+left join accounts a
+on a.account_id = t.account_id
+where t.transaction_type = "Debit"
+group by date_format(t.transaction_date,"%Y-%m")
+)
+select
+	transaction_month,
+    active_transacting_customers,
+    total_debit_transactions,
+    total_monthly_amount,
+	avg_txn_size,
+    previous_month_spend,
+    round(((total_monthly_amount - previous_month_spend) / NULLIF(previous_month_spend, 0)) * 100, 2) as mom_spend_growth_pct
+from cte1
