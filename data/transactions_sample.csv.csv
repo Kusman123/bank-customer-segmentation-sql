@@ -1,0 +1,7 @@
+"transaction_id,account_id,transaction_date,transaction_type,amount,description"
+"9001,101,2026-03-01 10:15:00,Credit,5000.00,Salary Deposit"
+"9002,101,2026-03-05 14:30:00,Debit,1250.00,UPI Merchant Payment"
+"9003,102,2026-03-10 09:20:00,Debit,3400.00,ATM Withdrawal"
+"9004,103,2026-03-12 11:45:00,Credit,25000.00,Wire Transfer"
+"9005,103,2026-03-18 16:10:00,Debit,4500.50,Online Shopping"
+"9006,106,2026-03-25 18:00:00,Debit,800.00,Utility Bill Payment"

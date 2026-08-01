@@ -1,0 +1,7 @@
+"account_id,customer_id,account_type,account_status,balance,opened_date"
+"101,1,Savings,Active,15000.50,2024-01-15"
+"102,1,Checking,Active,5200.00,2024-02-01"
+"103,2,Savings,Active,105400.00,2024-01-20"
+"104,3,Investment,Active,250000.00,2024-02-05"
+"105,4,Savings,Inactive,1200.75,2024-02-18"
+"106,5,Checking,Active,45000.00,2024-03-02"
